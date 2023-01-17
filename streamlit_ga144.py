@@ -17,6 +17,7 @@ import io
 import sys
 import subprocess
 import traceback
+import psutil
 from pathlib import Path
 
 # élargir la page
@@ -356,7 +357,7 @@ if st.session_state["login"] == True:
             st.stop()
 
         if selected_horizontal_cpu == "Send":
-            st.info(f"Send program to board !", icon="ℹ️")
+            st.info(f"Send program to board !{st.session_state['serial_port']}", icon="ℹ️")
             bar_progression(10, 0.1)
             st.session_state['send'] = True
             st.stop()
@@ -520,9 +521,9 @@ if st.session_state["login"] == True:
         for port, desc, hwid in sorted(ports):
             list_port.append(port)
         option_port_serial = st.selectbox('Serial Port selection', list_port)
-        st.write('You selected:', option_port_serial)
         st.session_state['serial_port'] = option_port_serial
         time.sleep(0.1)
+        st.write('You selected:', st.session_state['serial_port'])
 
     # gestion GA144 nodes
     my_expander = st.expander(label=f"GA144 Nodes {str(file_in_folder()).replace('.node', '').replace('init', '')} ")
@@ -580,10 +581,14 @@ if st.session_state["login"] == True:
                     # ga144compilation_process = subprocess.run(["python", "ga.py",f"{st.session_state['name_projet']}/{st.session_state['name_projet']}.Cga_"],capture_output=True, text=True)
                     p = Path(f"{st.session_state['folder_project']}/{st.session_state['name_projet']}.Cga_")
                     st.write(p)
+                    ga144size_compilation_process = subprocess.run(["python", "ga.py", p, "--size"],
+                                                                   capture_output=True, check=True, text=True)
                     ga144compilation_process = subprocess.run(["python", "ga.py", p],
                                                               capture_output=True, text=True)
+                    stdout_f.write(ga144size_compilation_process.stdout)  # --size   Count node ram usage
                     stdout_f.write(ga144compilation_process.stdout)
                     stderr_f.write(ga144compilation_process.stderr)
+
                     # print(read_file(st.session_state['compilation_file']))
                     print(read_file(f"{st.session_state['folder_project']}/{st.session_state['compilation_file']}_"))
 
@@ -606,18 +611,15 @@ if st.session_state["login"] == True:
                     # ga144send_process = subprocess.run(["pwd"], capture_output=True, text=True)
                     # ga144send_process = subprocess.run(["python", "ga.py", f"{st.session_state['name_projet']}/{st.session_state['name_projet']}.Cga_","--port", f"{st.session_state['serial_port']}"], capture_output=True, text=True)
                     p = Path(f"{st.session_state['folder_project']}/{st.session_state['name_projet']}.Cga_")
-                    ga144send_process = subprocess.run(
-                        ["python", "ga.py", p,
-                         "--port", f"{st.session_state['serial_port']}"], capture_output=True, text=True)
-                    stdout_f.write(ga144send_process.stdout)
-                    stderr_f.write(ga144send_process.stderr)
-
+                    st.write(f"Send to {st.session_state['serial_port']}")
+                    # ga144send_process = subprocess.run(["python", "ga.py", p,"--port", f"{st.session_state['serial_port']}"], capture_output=True, timeout=25, check=True,text=True)
+                    ga144send_process = subprocess.Popen(["python", "ga.py", p, "--port", f"{st.session_state['serial_port']}"], stdout=subprocess.PIPE)
+                    st.write(ga144send_process.stdout.readlines())
+                    if st.button("End Process"):
+                        st.write('end send')
+                        ga144send_process.kill()
                 except Exception as e:
                     traceback.print_exc()
                     traceback.print_exc(file=sys.stdout)  # or sys.stdout
-            stdout_text = stdout_f.getvalue()
-            stdout.text(stdout_text)
-            stderr_text = stderr_f.getvalue()
-            stderr.text(stderr_text)
             st.session_state['send'] = False
-            st.write('end send')
+
