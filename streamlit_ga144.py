@@ -17,8 +17,9 @@ import io
 import sys
 import subprocess
 import traceback
-import psutil
 from pathlib import Path
+
+
 
 # élargir la page
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
@@ -614,9 +615,9 @@ if st.session_state["login"] == True:
                     st.write(f"Send to {st.session_state['serial_port']}")
                     # ga144send_process = subprocess.run(["python", "ga.py", p,"--port", f"{st.session_state['serial_port']}"], capture_output=True, timeout=25, check=True,text=True)
                     ga144send_process = subprocess.Popen(["python", "ga.py", p, "--port", f"{st.session_state['serial_port']}"], stdout=subprocess.PIPE)
-                    st.write(ga144send_process.stdout.readlines())
-                    if st.button("End Process"):
-                        st.write('end send')
+
+                    st.write(ga144send_process.stdout.read().decode())
+                    if st.button("End"):
                         ga144send_process.kill()
                 except Exception as e:
                     traceback.print_exc()
