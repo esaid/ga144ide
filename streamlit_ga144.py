@@ -294,6 +294,7 @@ if st.session_state["login"] == True:
             file_project_font = f"""<style>p.a {{ font: bold 15px Courier;}}</style><p class="a">{', '.join(file_in_folder())}</p>"""
             st.markdown(file_project_font, unsafe_allow_html=True)
 
+
     # afficher  animation cpu
     with st.spinner(text="GA144"):
         st_lottie(lottie_jsonGA144, height=150, key="loading_gif")
