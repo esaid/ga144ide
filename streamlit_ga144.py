@@ -19,8 +19,6 @@ import subprocess
 import traceback
 from pathlib import Path
 
-
-
 # élargir la page
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 path_avatar_drive = 'avatar'
@@ -270,7 +268,7 @@ if st.session_state["login"] == True:
     # st.write(st.session_state['folder_lib'])
     # charger animation cpu
     cpu_file = "cpu.json"
-    dir_cpu_file = f"{st.session_state['folder_streamlit']}{cpu_file}"
+    # dir_cpu_file = f"{st.session_state['folder_streamlit']}{cpu_file}"
 
     # lottie_cpu = load_lottiefile(cpu_file)
     lottie_cpu = database.get_file_drive_json(database.lotties_drive, cpu_file)
@@ -293,7 +291,6 @@ if st.session_state["login"] == True:
             st.markdown(project_font, unsafe_allow_html=True)
             file_project_font = f"""<style>p.a {{ font: bold 15px Courier;}}</style><p class="a">{', '.join(file_in_folder())}</p>"""
             st.markdown(file_project_font, unsafe_allow_html=True)
-
 
     # afficher  animation cpu
     with st.spinner(text="GA144"):
@@ -615,7 +612,8 @@ if st.session_state["login"] == True:
                     p = Path(f"{st.session_state['folder_project']}/{st.session_state['name_projet']}.Cga_")
                     st.write(f"Send to {st.session_state['serial_port']}")
                     # ga144send_process = subprocess.run(["python", "ga.py", p,"--port", f"{st.session_state['serial_port']}"], capture_output=True, timeout=5, check=True,text=True)
-                    ga144send_process = subprocess.Popen(["python", "ga.py", p, "--port", f"{st.session_state['serial_port']}"], stdout=subprocess.PIPE)
+                    ga144send_process = subprocess.Popen(
+                        ["python", "ga.py", p, "--port", f"{st.session_state['serial_port']}"], stdout=subprocess.PIPE)
 
                     st.text(ga144send_process.stdout.read().decode())
                     # ga144send_process.wait(timeout=5)
@@ -625,4 +623,3 @@ if st.session_state["login"] == True:
                     traceback.print_exc()
                     traceback.print_exc(file=sys.stdout)  # or sys.stdout
             st.session_state['send'] = False
-
