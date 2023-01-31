@@ -122,6 +122,14 @@ def bar_progression(progress, t):
         my_bar.progress(percent_complete)
     my_bar.empty()
 
+def info_button(val):
+    if val in str(file_in_folder()):
+        file_name = val + '.node'
+        f = read_file(file_name)  # read val.node  file
+        st.session_state['file_node'] = file_name
+        st.session_state['code'] = f
+        view_code_node()
+        st.session_state['loaded'] = True
 
 def find_fonction_node(node_):
     if node_ in GPIO:
@@ -564,7 +572,9 @@ if st.session_state["login"] == True:
             else:
                 type_ = 'secondary'
                 help_ = ''
-            next(cols).button(label=str(button_node), type=type_, help=help_)
+
+            next(cols).button(label=str(button_node), type=type_, help=help_ , on_click= info_button, args= (str(button_node),))
+            # on_click , on passe en argument le node du bouton ( le label)
 
     expander_compilation = st.expander(label=f"GA144 compilation  ")
     container_compilation = st.container()
