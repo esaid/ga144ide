@@ -1,0 +1,7 @@
+node 708
+include 708serial.ga
+: main
+    io b! south a!
+    14 for @ send drop next
+    exit
+    

@@ -1,0 +1,3 @@
+node 608
+north a! 1 0
+: lucas over over + dup ! lucas
