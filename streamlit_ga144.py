@@ -11,6 +11,8 @@ import database
 from streamlit_ace import st_ace
 from streamlit_lottie import st_lottie
 from streamlit_option_menu import option_menu
+from streamlit.components.v1 import html
+import pyautogui
 from itertools import cycle
 from contextlib import redirect_stdout, redirect_stderr
 import io
@@ -122,6 +124,7 @@ def bar_progression(progress, t):
         my_bar.progress(percent_complete)
     my_bar.empty()
 
+
 def info_button(val):
     if val in str(file_in_folder()):
         file_name = val + '.node'
@@ -130,6 +133,7 @@ def info_button(val):
         st.session_state['code'] = f
         view_code_node()
         st.session_state['loaded'] = True
+
 
 def find_fonction_node(node_):
     if node_ in GPIO:
@@ -211,7 +215,7 @@ def file_exist(file_):
 
 def select_folder_project():
     project_folder = "\n\r".join(str(st.session_state['folder_project']).split())
-    # st.write(project_folder)
+    st.write(project_folder)
     os.chdir(project_folder)  # path projet
 
 
@@ -304,11 +308,33 @@ if st.session_state["login"] == True:
     with st.spinner(text="GA144"):
         st_lottie(lottie_jsonGA144, height=150, key="loading_gif")
     # afficher animation cpu et menu vertical
+
     with st.sidebar:
+
         selected_vertical_menu = option_menu("Main Menu", ["Home", 'Setting-communication', 'About'],
                                              icons=['house', 'motherboard', 'question'],
+                                             default_index=0,
                                              menu_icon="cast",
-                                             default_index=0)
+                                             )
+
+        if selected_vertical_menu == 'About':
+            st.info('GA144 program  version 1.1', icon="ℹ️")
+            st.info(st.session_state['serial_port'], icon="🔌")
+            time.sleep(2)
+
+            # gestion port serie
+        if selected_vertical_menu == 'Setting-communication':
+            message = ''
+            ports = serial.tools.list_ports.comports()
+            list_port = []
+            for port, desc, hwid in sorted(ports):
+                list_port.append(port)
+
+            option_port_serial = st.selectbox('Serial Port selection', list_port)
+            st.session_state['serial_port'] = option_port_serial
+            time.sleep(1)
+            st.write('You selected:', st.session_state['serial_port'])
+
         # selection node par type et numero node
 
         node_type = st.selectbox(
@@ -469,6 +495,8 @@ if st.session_state["login"] == True:
     if selected_horizontal == 'Restart':
         select_folder_streamlit()
         st.warning('Press F5 or refresh the web page', icon='⚠')
+        # html("window.location.reload(true);")
+        pyautogui.hotkey("ctrl", "F5")  # restart the app by simulating F5 key
 
     if selected_horizontal == 'Home':
         select_folder_project()
@@ -517,20 +545,6 @@ if st.session_state["login"] == True:
             st.session_state['code'] = code_editeur
             st.stop()  # attente save
 
-    if selected_vertical_menu == 'About':
-        st.info('informational message GA144 program ', icon="ℹ️")
-
-    # gestion port serie
-    if selected_vertical_menu == 'Setting-communication':
-        message = ''
-        ports = serial.tools.list_ports.comports()
-        list_port = []
-        for port, desc, hwid in sorted(ports):
-            list_port.append(port)
-        option_port_serial = st.selectbox('Serial Port selection', list_port)
-        st.session_state['serial_port'] = option_port_serial
-        time.sleep(0.1)
-        st.write('You selected:', st.session_state['serial_port'])
 
     # gestion GA144 nodes
     my_expander = st.expander(label=f"GA144 Nodes {str(file_in_folder()).replace('.node', '').replace('init', '')} ")
@@ -573,7 +587,8 @@ if st.session_state["login"] == True:
                 type_ = 'secondary'
                 help_ = ''
 
-            next(cols).button(label=str(button_node), type=type_, help=help_ , on_click= info_button, args= (str(button_node),))
+            next(cols).button(label=str(button_node), type=type_, help=help_, on_click=info_button,
+                              args=(str(button_node),))
             # on_click , on passe en argument le node du bouton ( le label)
 
     expander_compilation = st.expander(label=f"GA144 compilation  ")
@@ -609,7 +624,7 @@ if st.session_state["login"] == True:
             stderr_text = stderr_f.getvalue()
             stderr.text(stderr_text)
 
-    expander_send = st.expander(label=f"GA144 send  ")
+    expander_send = st.expander(label=f" Communication to GA144 ")
 
     with expander_send:
         if st.session_state['send']:
@@ -617,16 +632,14 @@ if st.session_state["login"] == True:
             with redirect_stdout(io.StringIO()) as stdout_f, redirect_stderr(io.StringIO()) as stderr_f:
                 try:
                     select_folder_streamlit()
-                    # ga144send_process = subprocess.run(["pwd"], capture_output=True, text=True)
-                    # ga144send_process = subprocess.run(["python", "ga.py", f"{st.session_state['name_projet']}/{st.session_state['name_projet']}.Cga_","--port", f"{st.session_state['serial_port']}"], capture_output=True, text=True)
                     p = Path(f"{st.session_state['folder_project']}/{st.session_state['name_projet']}.Cga_")
-                    st.write(f"Send to {st.session_state['serial_port']}")
-                    # ga144send_process = subprocess.run(["python", "ga.py", p,"--port", f"{st.session_state['serial_port']}"], capture_output=True, timeout=5, check=True,text=True)
-                    ga144send_process = subprocess.Popen(
-                        ["python", "ga.py", p, "--port", f"{st.session_state['serial_port']}"], stdout=subprocess.PIPE)
-
+                    # st.write("path : ", p)
+                    commande = f"python .\ga.py  {p}   --port  {st.session_state['serial_port']}"
+                    st.write(commande)
+                    # st.write(f"Send to {st.session_state['serial_port']}")
+                    ga144send_process = subprocess.Popen(commande, stdout=subprocess.PIPE)
                     st.text(ga144send_process.stdout.read().decode())
-                    # ga144send_process.wait(timeout=5)
+                    ga144send_process.wait(timeout=5)
                     if st.button("End"):
                         ga144send_process.kill()
                 except Exception as e:

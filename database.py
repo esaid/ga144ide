@@ -1,6 +1,7 @@
 import os
 import sys
 from deta import Deta
+# https://deta.space/collections/a05kcn0m
 from dotenv import load_dotenv  # python-dotenv
 import pickle
 import streamlit as st
@@ -30,7 +31,6 @@ path_lib_drive = 'lib'
 lib_drive = deta.Drive(path_lib_drive)  # lib/ Drive
 path_lotties_drive = 'lotties'  # fichiers json
 lotties_drive = deta.Drive(path_lotties_drive)  # avatar/ Drive
-
 db_hashed = deta.Drive('hashed_pwd.plk')  # hashed Drive
 
 
@@ -171,4 +171,9 @@ def list_files(drive_):
 # a = get_database(db_user, '1')
 # print(a)
 # update_database(db_user, {'name': name_}, '1')
+# sys.exit()
+# a = fetch_all(db_user)
+# b = lib_drive.list()
+# print(a)
+# print(b)
 # sys.exit()
